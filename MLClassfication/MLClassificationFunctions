@@ -58,7 +58,8 @@ export minimax(series float value, series int p, series float min,series float m
 
 export reqularizer(string r, series float w, series int p, series float alpha, series float lambda) =>
     // @function Regularization term : Returns regularization quantity to control overfitting and underfitting
-    // @params: <float w> : Secod vector
+    // @params: <string r> : choice of regularizer e.g L1-norm, l2-norm or L1-L2 (Elastic Net)
+    // @params: <float w> : training weight
     // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
     // @params: <float alpha> : Hyperparameter (inner) I
     // @params: <float lambda> : Hyperparameter (outer) II
