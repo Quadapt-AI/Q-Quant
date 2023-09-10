@@ -1,6 +1,5 @@
 // This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © QuadaptTrader
-// Author: Kenneth E.
 
 //@version=5
 library("MLClassificationFunctions", true)
@@ -32,7 +31,12 @@ library("MLClassificationFunctions", true)
 // Logistic regression is widely used in various fields, including healthcare (disease prediction), marketing (customer churn analysis), finance (credit risk modeling), and many 
 // other applications where binary classification or probability estimation is essential. It's a fundamental tool in the machine learning and statistical analysis toolkit.
 
+//-----------------------------------------------------------------------------{
+// Utils
+//-----------------------------------------------------------------------------{
+
 export dot(series float v, series float w, series int p) =>  // dot product
+    // \sum_{i = 1}^{p} v \dot w
     // @function dot : Returns the inner product of two vectors
     // @params: <float v> : First vector
     // @params: <float w> : Secod vector
@@ -40,12 +44,34 @@ export dot(series float v, series float w, series int p) =>  // dot product
     // @returns <float float> : The inner product of two vectors
     math.sum(v * w, p)
 
-export minimax(series float ds, series int p, series float min,series float max) =>  // normalize to price
-    hi = ta.highest(ds, p)
-    lo = ta.lowest(ds, p)
-    (max - min) * (ds - lo) / (hi - lo) + min
+export minimax(series float value, series int p, series float min,series float max) =>
+    // (max - min) * (value - low) / (high - minimum) + minimum
+    // @function Price normalization : Returns normalization value of the prediction
+    // @params <int value> : input value to normalize
+    // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
+    // @params: <float min> : min value over range of p-values (not probabilities)
+    // @params: <float max> : max value over range of p-values (not probabilities)
+    // @returns <float float> : minimax value
+    hi = ta.highest(value, p)
+    lo = ta.lowest(value, p)
+    (max - min) * (value - lo) / (hi - lo) + min
 
-export sigmoid(series float z) =>  //activation function
+export reqularizer(string r, series float w, series int p, series float alpha, series float lambda) =>
+    // @function Regularization term : Returns regularization quantity to control overfitting and underfitting
+    // @params: <float w> : Secod vector
+    // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
+    // @params: <float alpha> : Hyperparameter (inner) I
+    // @params: <float lambda> : Hyperparameter (outer) II
+    // @returns <float float> : L1, L2 or L1-L2 (Elastic Net) regularization
+    switch r
+        'l1' => lambda * math.abs(w)
+        'l2' => lambda * dot(w, w, p)
+        'enet' => lambda * dot(alpha * dot(w, w, p), (1 - alpha) * math.abs(w), p)
+        'nr' => 0.0 //No regularization
+
+
+export sigmoid(series float z) => 
+    // 1.0 / (1.0 + exp(-z))
     // @function Sigmoid : Returns the output of a sigmoid function
     // @params: <float z> : vector, usually the hypothesis
     // @returns <float float> : output of a sigmoid function
@@ -53,74 +79,20 @@ export sigmoid(series float z) =>  //activation function
 
 // Cost function of Logistic Regression
 export cost_logit(series float Y, series float y_hat, series int p) =>
+    // -1.0 / p \sum_{i = 1}^{p} y_i ln y_{hat}
     // @function loss function of Logit : Returns the loss function of Logistic regression model
     // @params: <float Y> : input data of the label to classify
     // @params: <float y_hat> :The hypothesis of the classification on Y
     // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
     // @returns <float float> : cost (loss) output
-    -1.0 / p * dot(dot(Y, math.log(y_hat) + 1.0 - Y, p), math.log(1.0 - y_hat), p)
+    1.0 / p * dot(dot(Y, math.log(y_hat), p), dot((1.0 - Y), math.log(1 - y_hat), p), p)
 
-//------ Training Logistic Regression
-export logistic_regression(series float X, series float Y, series int p, series float lr, series float epochs) =>
-    // @function Training function : Returns the training loss and hypothesis of the logistic regression model
-    // @params: <float X> : Input predictor required to classify a given label Y
-    // @params: <float Y> : Input data of the label to classify
-    // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
-    // @params: <float lr> : The learning rate
-    // @params: <float epochs> : The number of training steps
-    // @returns <float float> : cost (loss) output
-    float w = 0.0
-    float loss = 0.0
-    for i = 1 to epochs
-        y_hat = sigmoid(dot(X, 0.0, p))  //-- prediction
-        loss := cost_logit(Y, y_hat, p)
-        gradient = 1.0 / p * dot(X, y_hat - Y, p)
-        w -= lr * gradient  //-- update weights
-        w
-    [loss, sigmoid(dot(X, w, p))]  //-- current loss & prediction
-
-//------ Training Regularized Logistic Regression with L1-norm
-export logistic_regression_l1(series float X, series float Y, series int p, series float lr, series float _lambda, series float epochs) =>
-    // @function Training function : Returns the training loss and hypothesis of the L1-norm logistic regression model
-    // @params: <float X> : Input predictor required to classify a given label Y
-    // @params: <float Y> : Input data of the label to classify
-    // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
-    // @params: <float lr> : The learning rate
-    // @params: <float _lambda> : Weight parameter fixed on the regularizer e.g 0.1
-    // @params: <float epochs> : The number of training steps
-    // @returns <float float> : cost (loss) output for L1-norm regularized logistic regression
-    float w = 0.0
-    float loss = 0.0
-    for i = 1 to epochs
-        y_hat = sigmoid(dot(X, 0.0, p))  //-- prediction
-        loss := cost_logit(Y, y_hat, p) + _lambda * math.abs(w)
-        gradient = 1.0 / p * dot(X, y_hat - Y, p)
-        w -= lr * gradient  //-- update weights
-        w
-    [loss, sigmoid(dot(X, w, p))]  //-- current loss & prediction
-
-//------ Training Regularized Logistic Regression with L2-norm
-export logistic_regression_l2(series float X, series float Y, series int p, series float lr, series float _lambda, series float epochs) =>
-    // @function Training function : Returns the training loss and hypothesis of the L2-norm logistic regression model
-    // @params: <float X> : Input predictor required to classify a given label Y
-    // @params: <float Y> : Input data of the label to classify
-    // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
-    // @params: <float lr> : The learning rate
-    // @params: <float _lambda> : Weight parameter fixed on the regularizer e.g 0.1
-    // @params: <float epochs> : The number of training steps
-    // @returns <float float> : cost (loss) output for L2-norm regularized logistic regression
-    float w = 0.0
-    float loss = 0.0
-    for i = 1 to epochs
-        y_hat = sigmoid(dot(X, 0.0, p))  //-- prediction
-        loss := cost_logit(Y, y_hat, p) + _lambda * dot(w, w, p)
-        gradient = 1.0 / p * dot(X, y_hat - Y, p)
-        w -= lr * gradient  //-- update weights
-        w
-    [loss, sigmoid(dot(X, w, p))]  //-- current loss & prediction
+//-----------------------------------------------------------------------------{
+// Training
+//-----------------------------------------------------------------------------{
 
 //------ Training Regularized Logistic Regression with Elastic Net
-export logistic_regression_enet(series float X, series float Y, series int p, series float lr, series float _lambda, series float _alpha, series float epochs) =>
+export logistic_regression(series float X, series float Y, series int p, series float lr, series float _lambda, series float _alpha, series float epochs, series string r) =>
     // @function Training function : Returns the training loss and hypothesis of the Elastic Net logistic regression model
     // @params: <float X> : Input predictor required to classify a given label Y
     // @params: <float Y> : Input data of the label to classify
@@ -134,7 +106,7 @@ export logistic_regression_enet(series float X, series float Y, series int p, se
     float loss = 0.0
     for i = 1 to epochs
         y_hat = sigmoid(dot(X, 0.0, p))  //-- prediction
-        loss := cost_logit(Y, y_hat, p) + _lambda * dot(_alpha * dot(w, w, p), (1 - _alpha) * math.abs(w), p)
+        loss := cost_logit(Y, y_hat, p) + reqularizer(r, w, p, _alpha, _lambda)
         gradient = 1.0 / p * dot(X, y_hat - Y, p)
         w -= lr * gradient  //-- update weights
         w
@@ -142,6 +114,10 @@ export logistic_regression_enet(series float X, series float Y, series int p, se
 
 //-----------------------------------------------------------------------------{
 // Support Vector Machine
+//-----------------------------------------------------------------------------{
+
+//-----------------------------------------------------------------------------{
+// Utils
 //-----------------------------------------------------------------------------{
 
 //------ Margin 
@@ -185,8 +161,12 @@ export svm_axon(series float z) =>
     // @returns <float float> : output of a sigmoid function
     math.sign(z)
 
+//-----------------------------------------------------------------------------{
+// Training
+//-----------------------------------------------------------------------------{
+
 //--- Training Linear SVM
-export linear_SVM(series float X, series float Y, series int p, series float lr, series float C, series float epochs) =>
+export linear_SVM(series float X, series float Y, series int p, series float lr, series float C, series float _lambda, series float _alpha, series float epochs, series string r) =>
     // w -> weight; loss -> SVM loss; b -> bias weight C -> relaxation term
     // @function Training function : Returns the training loss and hypothesis of linear Support Vector Machine (SVM)
     // @params: <float X> : Input predictor required to classify a given label Y
@@ -202,7 +182,7 @@ export linear_SVM(series float X, series float Y, series int p, series float lr,
     for i = 1 to epochs
         y_hat = margin(X, Y, 0.0, 0.0, p)
         if y_hat < 1
-            loss := cost_svm(X, Y, w, b, p)
+            loss := cost_svm(X, Y, w, b, p) + reqularizer(r, w, p, _alpha, _lambda)
             gradient = 1.0 / p * (b - C * dot(Y, X, p))
             b := 1.0 / p * (b - lr * C * math.sum(Y, p))
             w -= lr * gradient
@@ -235,17 +215,11 @@ export activation_perceptron(series float z) =>
     // @function Perceptron activation : Returns the output of a perceptron function
     // @params: <float z> : vector, usually the hypothesis
     // @returns <float float> : output of a sigmoid function
-    float result = 0.
-    if math.sign(z) > 0
-        result := 1
-        result
-    else if math.sign(z) < 0
-        result := 0
-        result
+    result = z > 0 ? 1 : 0
     result
 
 //------- Training a perceptron
-export perceptron(series float X, series float Y, series int p, series float epochs) =>
+export perceptron(series float X, series float Y, series int p, series float _lambda, series float _alpha, series float epochs, series string r) =>
     // @function Training function : Returns the training loss and hypothesis of Perceptron model
     // @params: <float X> : Input predictor required to classify a given label Y
     // @params: <float Y> : Input data of the label to classify
@@ -257,16 +231,29 @@ export perceptron(series float X, series float Y, series int p, series float epo
     for i = 1 to epochs
         y_hat = tanh(X, w, p)
         if Y != y_hat
-            loss := cost_perceptron(Y, y_hat)
+            loss := cost_perceptron(Y, y_hat) + reqularizer(r, w, p, _alpha, _lambda)
             w += 0.1 * dot(loss, X, p)
             w
     [loss, activation_perceptron(dot(X, w, p))]
 
 
 // Example
-[loss, y_hat] = logistic_regression(close, close, 100, 1e-3, 1000)
-y_hat_scaled = minimax(y_hat, 30, ta.lowest(close, 30), ta.highest(close, 30))
-
-plot(y_hat_scaled, color = color.white, title = "Prediction")
+reg = 'nr'
+p = 50
+nm = 5
+alpha = 0.1
+lambda = 0.5
+//-logit
+[loss_lgit, y_hat_lgit] = logistic_regression(close, math.log(hl2), p, 1e-3, lambda, alpha, 1000, reg)
+y_hat_scaled_lgit = minimax(y_hat_lgit, nm, ta.lowest(close, nm), ta.highest(close, nm))
+//-SVM
+[loss_svm, y_hat_svm] = linear_SVM(close, hl2, p, 1e-3, 0.1, lambda, alpha, 1000, reg)
+y_hat_scaled_svm = minimax(y_hat_svm, nm, ta.lowest(close, nm), ta.highest(close, nm))
+//-Perceptron
+[loss_p, y_hat_p] = perceptron(close, hl2, p, lambda, alpha, 1000, reg)
+y_hat_scaled_p = minimax(y_hat_p, nm, ta.lowest(close, nm), ta.highest(close, nm))
+//-Render plots
+plot(y_hat_scaled_svm, color = color.red, title = "SVM")
+plot(y_hat_scaled_p, color = color.blue, title = "Perceptron")
 
 
