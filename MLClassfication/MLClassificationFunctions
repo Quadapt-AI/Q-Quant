@@ -79,7 +79,7 @@ export sigmoid(series float z) =>
 
 // Cost function of Logistic Regression
 export cost_logit(series float Y, series float y_hat, series int p) =>
-    // -1.0 / p \sum_{i = 1}^{p} y_i ln y_{hat}
+    // -1.0 / p \sum_{i = 1}^{p} y_i ln y_{hat} + (1 - y_i) ln (1 - y_hat)
     // @function loss function of Logit : Returns the loss function of Logistic regression model
     // @params: <float Y> : input data of the label to classify
     // @params: <float y_hat> :The hypothesis of the classification on Y
@@ -193,6 +193,10 @@ export linear_SVM(series float X, series float Y, series int p, series float lr,
 // Perceptron
 //-----------------------------------------------------------------------------{
 
+//-----------------------------------------------------------------------------{
+// Utils
+//-----------------------------------------------------------------------------{
+
 //------------ Prediction
 export tanh(series float X, series float w, series int p) =>
     // @function tanh : Returns the hyperbolic tangent (tanh) of a vector
@@ -217,6 +221,10 @@ export activation_perceptron(series float z) =>
     // @returns <float float> : output of a sigmoid function
     result = z > 0 ? 1 : 0
     result
+
+//-----------------------------------------------------------------------------{
+// Training
+//-----------------------------------------------------------------------------{
 
 //------- Training a perceptron
 export perceptron(series float X, series float Y, series int p, series float _lambda, series float _alpha, series float epochs, series string r) =>
@@ -253,6 +261,7 @@ y_hat_scaled_svm = minimax(y_hat_svm, nm, ta.lowest(close, nm), ta.highest(close
 [loss_p, y_hat_p] = perceptron(close, hl2, p, lambda, alpha, 1000, reg)
 y_hat_scaled_p = minimax(y_hat_p, nm, ta.lowest(close, nm), ta.highest(close, nm))
 //-Render plots
+plot(y_hat_scaled_lgit, color = color.white, title = "Logit")
 plot(y_hat_scaled_svm, color = color.red, title = "SVM")
 plot(y_hat_scaled_p, color = color.blue, title = "Perceptron")
 
