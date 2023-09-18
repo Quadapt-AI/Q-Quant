@@ -117,6 +117,37 @@ export logistic_regression(series float X, series float Y, series int p, series 
 // Support Vector Machine
 //-----------------------------------------------------------------------------{
 
+// Support Vector Machine (SVM) is a machine learning algorithm used for classification and regression tasks. Its primary goal is to find an 
+// optimal hyperplane that best separates data points into different classes while maximizing the margin between them. SVMs are effective in 
+// handling both linear and non-linear data and have applications in various fields such as image classification, text analysis, and 
+// bioinformatics. They rely on the concept of support vectors and can use different kernel functions to transform data for improved separation. 
+// SVMs are known for their ability to provide accurate results and their versatility in solving complex problems. However, they can be 
+// computationally intensive, and hyperparameter tuning is crucial for their performance.
+
+//In a linear Support Vector Machine (SVM), there are several tunable hyperparameters that can be adjusted to optimize its performance. These 
+//hyperparameters include:
+
+    // [1] C (Regularization Parameter): C controls the trade-off between maximizing the margin and minimizing the classification error. A smaller 
+    //                                 C value results in a larger margin but may allow some misclassification, while a larger C value aims for 
+    //					more precise classification at the cost of a smaller margin. Tuning C is essential for balancing bias and variance.
+
+    // [2] Kernel Choice: In a linear SVM, the choice of kernel is typically "linear" since it operates in a linear feature space. However, some 
+    //			  SVM implementations may allow you to specify different kernel functions (e.g., polynomial or RBF) even for linear SVM. 
+    //			  Ensuring that the kernel is set to "linear" is important for linear SVM.
+
+    // [3] Loss Function: Some SVM implementations may allow you to choose between different loss functions, such as "hinge loss" or "squared 
+    //			hinge loss." These can affect the optimization process and the margin's robustness.
+
+    // [4] Tolerance (tol): The tolerance parameter determines the stopping criterion for the optimization algorithm. It controls the threshold 
+    //			    for convergence. You can adjust it to influence the speed of convergence and potentially trade off computational efficiency for precision.
+
+    // [5] Class Weights (class_weight): If your dataset is imbalanced, you can assign different weights to the classes to influence the SVM's 		
+    //					 behavior. This can help ensure that the SVM pays more attention to the minority class during training.
+
+    // [6] Max Iterations (max_iter): This hyperparameter specifies the maximum number of iterations the SVM optimization algorithm is allowed to 
+    //				      run. It can be adjusted to control the training time, especially for large datasets or when convergence is 
+    //                                slow.
+    
 //-----------------------------------------------------------------------------{
 // Utils
 //-----------------------------------------------------------------------------{
@@ -194,6 +225,12 @@ export linear_SVM(series float X, series float Y, series int p, series float lr,
 // Perceptron
 //-----------------------------------------------------------------------------{
 
+// The Perceptron is a fundamental concept in machine learning and artificial intelligence. It is a binary linear classifier that models a 
+// decision boundary to separate data into two classes. The Perceptron algorithm is based on the workings of a biological neuron, with inputs 
+// being weighted and summed to produce an output. While simple, Perceptrons can be effective for linearly separable data but have limitations 
+// when dealing with complex problems. They serve as a building block for more advanced neural network architectures like multi-layer perceptrons 
+// (MLPs).
+
 //-----------------------------------------------------------------------------{
 // Utils
 //-----------------------------------------------------------------------------{
@@ -220,7 +257,7 @@ export activation_perceptron(series float z) =>
     // @function Perceptron activation : Returns the output of a perceptron function
     // @params: <float z> : vector, usually the hypothesis
     // @returns <float float> : output of a sigmoid function
-    result = z > 0 ? 1 : 0
+    result = sign(z) > 0 ? 1 : 0
     result
 
 //-----------------------------------------------------------------------------{
