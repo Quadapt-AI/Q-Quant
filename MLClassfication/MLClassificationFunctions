@@ -89,7 +89,7 @@ export cost_logit(series float Y, series float y_hat, series int p) =>
     1.0 / p * dot(dot(Y, math.log(y_hat), p), dot((1.0 - Y), math.log(1 - y_hat), p), p)
 
 //-----------------------------------------------------------------------------{
-// Training
+// Training Logistic Regression
 //-----------------------------------------------------------------------------{
 
 //------ Training Regularized Logistic Regression with Elastic Net
@@ -194,7 +194,7 @@ export svm_axon(series float z) =>
     math.sign(z)
 
 //-----------------------------------------------------------------------------{
-// Training
+// Training an SVM
 //-----------------------------------------------------------------------------{
 
 //--- Training Linear SVM
@@ -261,7 +261,7 @@ export activation_perceptron(series float z) =>
     result
 
 //-----------------------------------------------------------------------------{
-// Training
+// Training a Perceptron
 //-----------------------------------------------------------------------------{
 
 //------- Training a perceptron
