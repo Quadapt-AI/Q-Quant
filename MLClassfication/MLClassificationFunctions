@@ -184,7 +184,7 @@ export cost_svm(series float X, series float Y, series float w, series float b, 
     // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
     // @returns <float float> : cost (total loss) output
     float C = 0.01
-    1.0 / p * 0.5 * dot(w, w, p) + C * math.sum(hinge(X, Y, w, b, p), p)
+    1.0 / p * C * math.sum(hinge(X, Y, w, b, p), p) // Regularizer <- 1 / p * 0.5 * dot(w, w, p)
 
 //-- Output axon
 export svm_axon(series float z) =>
@@ -214,7 +214,7 @@ export linear_SVM(series float X, series float Y, series int p, series float lr,
     for i = 1 to epochs
         y_hat = margin(X, Y, 0.0, 0.0, p)
         if y_hat < 1
-            loss := cost_svm(X, Y, w, b, p) + reqularizer(r, w, p, _alpha, _lambda)
+            loss := cost_svm(X, Y, w, b, p) + reqularizer(r, w, p, _alpha, _lambda) //you can set \lambda <- 0.5
             gradient = 1.0 / p * (b - C * dot(Y, X, p))
             b := 1.0 / p * (b - lr * C * math.sum(Y, p))
             w -= lr * gradient
