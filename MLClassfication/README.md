@@ -1,14 +1,14 @@
-# ML Classification Models for Financial Modeling- Pinescript
+# ML Classification Models for Financial Modeling- Utilities
 
 ## Notation
 |     Symbol              |       Description       | 
-|:--------------:          |        ------          |
+|:--------------:          |        :------          |
 | $x$                   | Data (predictor)          |
 | $y$                   | Label (target)            |
 | $y'$                  | Prediction                |
 | $w$                   | Weights                   |
 | $b$                   | Bias                      |
-| $\alpha$              | $l_{1, 2}$ or Elastic Net () hyperparameter       |
+| $\alpha$              | $l_{1, 2}$ or Elastic Net hyperparameter       |
 | $\lambda$             | Regularization weight      |
 | $\xi$                 | Slack variable            |
 | $C$                   | Regularization parameter (SVM)       |
