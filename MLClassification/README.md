@@ -32,11 +32,11 @@
 
 | Instrument | Signal Chart  |
 |:----------:|:--------:|
-| ```GBPCAD```| ![alt text](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassfication/Signals/SIgnals%202023-09-19%2003-48-40.png)|
-| ```CADCHF```| ![alt text](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassfication/Signals/Signals%202023-09-19%2004-11-11.png)|
-| ```AUDCHF```| ![alt text](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassfication/Signals/Signals%202023-09-19%2012-21-58.png)|
-| ```USDCAD```| ![alt text](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassfication/Signals/Signals%202023-09-19%2012-22-24.png)|
-| ```GBPCAD```| ![alt text](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassfication/Signals/Signals%202023-09-27%2022-53-20.png)|
-| ```BTCUSDT```| ![alt text](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassfication/Signals/Signals%202023-10-16%2000-26-53.png)|
-| ```BOEING```| ![alt text](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassfication/Signals/Signals%202023-10-16%2000-43-53.png)|
-| ```S&P500```| ![alt text](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassfication/Signals/Signals%202023-10-16%2000-53-19.png)|
+| ```GBPCAD```| ![alt GBPCAD](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassification/Signals/SIgnals%202023-09-19%2003-48-40.png)|
+| ```CADCHF```| ![alt CADCHF](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassification/Signals/Signals%202023-09-19%2004-11-11.png)|
+| ```AUDCHF```| ![alt AUDCHF](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassification/Signals/Signals%202023-09-19%2012-21-58.png)|
+| ```USDCAD```| ![alt USDCAD](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassification/Signals/Signals%202023-09-19%2012-22-24.png)|
+| ```GBPCAD```| ![alt GBPCAD](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassification/Signals/Signals%202023-09-27%2022-53-20.png)|
+| ```BTCUSDT```| ![alt BTCUSDT](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassification/Signals/Signals%202023-10-16%2000-26-53.png)|
+| ```BOEING```| ![alt BOEING](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassification/Signals/Signals%202023-10-16%2000-43-53.png)|
+| ```S&P500```| ![alt S&P500](https://github.com/Quadapt-AI/Q-Quant/blob/main/MLClassification/Signals/Signals%202023-10-16%2000-53-19.png)|
