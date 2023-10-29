@@ -282,6 +282,49 @@ export perceptron(series float X, series float Y, series int p, series float _la
             w
     [loss, activation_perceptron(dot(X, w, p))]
 
+//-----------------------------------------------------------------------------{
+// k-Nearest Neighbors (k-NN)
+//-----------------------------------------------------------------------------{
+
+// kNN is based on the idea that data points with similar features tend to belong to the same class or have similar values. 
+// It makes predictions by considering the -nearest data points (neighbors) in the training dataset to the data point you want to classify (for classification) or 
+// predict (for regression). It is often referred to as a lazy learner since it does not explicitly build a model during training. 
+// Instead, it stores the training data and makes predictions at runtime based on the nearest neighbors. 
+// In most cases, the choice of distance metric (such as Euclidean distance, Manhattan distance or Lorentzian distance) determines the 
+// performance of the algorithm before tuning the hyperparameter .
+
+export D(series float x1, series float x2, series string dt) =>
+    // @function Distance measure to compute the nearest neighbors
+    // @params: <float x1> : Input data to compare with next closest point [x2]
+    // @params: <float x2> : Input data to compare with next closest point [x1]
+    // @params: <string dt> : distance measure type for instance, Euclidean, Lorentzian, Canberra, Minkowski etc
+    switch dt
+        'euclidean' => math.sqrt(math.pow(x1 - x2, 2))
+        'lorentzian' => math.log(math.sqrt(math.pow(x1 - x2, 2)))
+        'canberra' => math.abs(x1 - x2) / ((math.abs(x1) + math.abs(x2) + 1e-8))
+        'minkowski' => math.pow(math.pow(math.abs(x1 - x2), 2), 1/3) //the power (1/p) is fixed (@ 1/3) here but it is actually a variable.
+        'absolute' => math.abs(x1 - x2)
+
+export kNN(series float X, series int p, series int k, series string dt) => 
+    // @params: <float X> : Input predictor required to classify a given label Y
+    // @params <int p> : lookback value is the number of historical data to consider when computing the dot product
+    // @params <int k> : number of k nearest neighbours
+    // @params: <string dt> : distance measure type for instance, Euclidean, Lorentzian, Canberra, Minkowski etc
+    // @returns <float float> : prediction and market direction
+    nearest_neighbors = array.new_float(0)
+    distances         = array.new_float(0)
+    for i = 0 to p-1
+        float d = D(X[i], X[i+1], dt)
+    	array.push(distances, d)
+    	int size = array.size(distances)
+    	//---
+        float new_neighbor = d < array.min(distances, size > k ? k : 0) ? X[i+1] : X[i]
+        array.push(nearest_neighbors, new_neighbor)
+    //--prediction on all datatset
+    float prediction = array.avg(nearest_neighbors)
+    int   direction  = prediction < X ? 1 : prediction > X ? -1 : 0
+    [prediction, direction]
+
 
 
 // Example
