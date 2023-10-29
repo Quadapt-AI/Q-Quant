@@ -257,7 +257,7 @@ export activation_perceptron(series float z) =>
     // @function Perceptron activation : Returns the output of a perceptron function
     // @params: <float z> : vector, usually the hypothesis
     // @returns <float float> : output of a sigmoid function
-    result = math.sign(z) > 0 ? 1 : 0
+    result = sign(z) > 0 ? 1 : 0
     result
 
 //-----------------------------------------------------------------------------{
@@ -281,6 +281,7 @@ export perceptron(series float X, series float Y, series int p, series float _la
             w += 0.1 * dot(loss, X, p)
             w
     [loss, activation_perceptron(dot(X, w, p))]
+
 
 
 // Example
