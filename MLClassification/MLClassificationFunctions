@@ -283,6 +283,7 @@ export perceptron(series float X, series float Y, series int p, series float _la
     [loss, activation_perceptron(dot(X, w, p))]
 
 
+
 // Example
 reg = 'nr'
 p = 50
