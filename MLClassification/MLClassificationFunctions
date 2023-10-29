@@ -326,6 +326,7 @@ export kNN(series float X, series int p, series int k, series string dt) =>
     [prediction, direction]
 
 
+
 // Example
 reg = 'nr'
 p = 50
