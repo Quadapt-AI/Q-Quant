@@ -287,7 +287,7 @@ export perceptron(series float X, series float Y, series int p, series float _la
 //-----------------------------------------------------------------------------{
 
 // kNN is based on the idea that data points with similar features tend to belong to the same class or have similar values. 
-// It makes predictions by considering the -nearest data points (neighbors) in the training dataset to the data point you want to classify (for classification) or 
+// It makes predictions by considering the k-nearest data points (neighbors) in the training dataset to the data point you want to classify (for classification) or 
 // predict (for regression). It is often referred to as a lazy learner since it does not explicitly build a model during training. 
 // Instead, it stores the training data and makes predictions at runtime based on the nearest neighbors. 
 // In most cases, the choice of distance metric (such as Euclidean distance, Manhattan distance or Lorentzian distance) determines the 
