@@ -257,7 +257,7 @@ export activation_perceptron(series float z) =>
     // @function Perceptron activation : Returns the output of a perceptron function
     // @params: <float z> : vector, usually the hypothesis
     // @returns <float float> : output of a sigmoid function
-    result = sign(z) > 0 ? 1 : 0
+    result = math.sign(z) > 0 ? 1 : 0
     result
 
 //-----------------------------------------------------------------------------{
@@ -287,7 +287,7 @@ export perceptron(series float X, series float Y, series int p, series float _la
 //-----------------------------------------------------------------------------{
 
 // kNN is based on the idea that data points with similar features tend to belong to the same class or have similar values. 
-// It makes predictions by considering the k-nearest data points (neighbors) in the training dataset to the data point you want to classify (for classification) or 
+// It makes predictions by considering the -nearest data points (neighbors) in the training dataset to the data point you want to classify (for classification) or 
 // predict (for regression). It is often referred to as a lazy learner since it does not explicitly build a model during training. 
 // Instead, it stores the training data and makes predictions at runtime based on the nearest neighbors. 
 // In most cases, the choice of distance metric (such as Euclidean distance, Manhattan distance or Lorentzian distance) determines the 
@@ -325,6 +325,28 @@ export kNN(series float X, series int p, series int k, series string dt) =>
     int   direction  = prediction < X ? 1 : prediction > X ? -1 : 0
     [prediction, direction]
 
+model(string mtyp, x_u, y_u, lookback, lrate, iterations, lambda_u, alpha_u, C_u, r_u, k, dt) =>
+    // @function Model selection : Returns the training loss and hypothesis of selected models
+    // @params: <float x_u> : Input predictor required to classify a given label Y
+    // @params: <float y_u> : Input data of the label to classify
+    // @params <int lookback> : lookback value is the number of historical data to consider when computing the dot product
+    // @params: <float lrate> : The number of training steps
+    // @params: <float iterations> : The number of training steps
+    // @params: <float lambda_u> : Hyperparameter for regularization
+    // @params: <float alpha_u> : Hyperparameter for regularization
+    // @params: <float C_u> : Hyperparameter for Linear SVM
+    // @params: <string r_u> : Boolean to select regularization
+    // @params: <string dt> : kNN distance selection
+    // @returns <float float> : cost (loss) and prediction outputs
+    //---
+    if mtyp == 'kNN' 
+        [loss, prediction] = kNN(y_u, lookback, k, dt)
+    else if mtyp == 'Perceptron'
+        [loss, prediction] = perceptron(x_u, y_u, lookback, lambda_u, alpha_u, iterations, r_u) //
+    else if mtyp == 'Logit'
+        [loss, prediction] = logistic_regression(x_u, y_u, lookback, lrate, lambda_u, alpha_u, iterations, r_u) //
+    else if mtyp == 'SVM'
+        [loss, prediction] = linear_SVM(x_u, y_u, lookback, lrate, C_u, lambda_u, alpha_u, iterations, r_u) //
 
 
 // Example
