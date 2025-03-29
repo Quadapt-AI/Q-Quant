@@ -1,0 +1,157 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © QuadaptTrader
+// Author: Kenneth E.
+//@version=5
+indicator("FiboExits - Normalized Weighted PSAR MTF", overlay=false)
+
+// Input for timeframes
+res1 = input.timeframe("15", "1st Timeframe")
+res2 = input.timeframe("30", "2nd Timeframe")
+res3 = input.timeframe("60", "3rd Timeframe")
+res4 = input.timeframe("240", "4th Timeframe")
+res5 = input.timeframe("D", "5th Timeframe")
+res6 = input.timeframe("W", "6th Timeframe")
+
+// PSAR and indicator settings
+psar_start = input.float(0.02, "PSAR Start", minval=1e-12, step=0.01)
+psar_inc = input.float(0.02, "PSAR Increment", minval=1e-12, step=0.01)
+psar_max = input.float(0.2, "PSAR Maximum", minval=0.01, step=0.1)
+cci_length = input.int(20, "CCI Length")
+vwap_length = input.int(21, "VWAP Length")
+atr_length = input.int(14, "ATR Length")
+
+// Wave Trend settings
+n1 = input.int(10, "Channel Length")
+n2 = input.int(21, "Average Length")
+obLevel1 = input.int(60, "Overbought Level 1")
+obLevel2 = input.int(53, "Overbought Level 2")
+osLevel1 = input.int(-60, "Oversold Level 1")
+osLevel2 = input.int(-53, "Oversold Level 2")
+
+// Colors
+color bullish = #00ffaa
+color bearish = #ff0000
+
+// Function to calculate Wave Trend
+getWaveTrend(tf) =>
+    src = request.security(syminfo.tickerid, tf, hlc3)
+    esa = ta.ema(src, n1)
+    d = ta.ema(math.abs(src - esa), n1)
+    ci = (src - esa) / (0.015 * d)
+    tci = ta.ema(ci, n2)
+    
+    wt1 = tci
+    wt2 = ta.sma(wt1, 4)
+    
+    // Normalize WaveTrend values to a -100 to 100 range
+    wt_normalized = math.max(math.min(wt1 / obLevel1 * 100, 100), -100)
+    
+    wt_normalized
+
+// Function to calculate enhanced normalized PSAR with Wave Trend
+getEnhancedPsar(tf) =>
+    // Price and indicator data
+    h = request.security(syminfo.tickerid, tf, high)
+    l = request.security(syminfo.tickerid, tf, low)
+    c = request.security(syminfo.tickerid, tf, hlc3)
+    tp = request.security(syminfo.tickerid, tf, hlc3)
+    
+    // Base PSAR calculation
+    psar_out = request.security(syminfo.tickerid, tf, ta.sar(psar_start, psar_inc, psar_max))
+    psar = c - psar_out
+    
+    // Calculate CCI
+    cci = ta.cci(tp, cci_length)
+    cci_factor = cci / 200
+    
+    // Enhanced VWAP calculation
+    vwap = ta.vwma(c, vwap_length)
+    vwap_upper = ta.vwma(h, vwap_length)
+    vwap_lower = ta.vwma(l, vwap_length)
+    vwap_band = (vwap_upper - vwap_lower) / 2
+    
+    // VWAP position relative to bands
+    vwap_factor = (c - vwap) / (vwap_band + 0.0001)
+    
+    // Get Wave Trend signal
+    wt_signal = getWaveTrend(tf)
+    wt_factor = wt_signal / 100  // Normalize to -1 to 1 range
+    
+    // ATR for volatility adjustment
+    atr = request.security(syminfo.tickerid, tf, ta.atr(atr_length))
+    vol_factor = atr / ta.sma(atr, vwap_length)
+    
+    // Combined normalization with improved weighting
+    vol_basis = ta.vwma(h - l, vwap_length)
+    psar_norm = psar / (vol_basis * math.pow(vol_factor, 0.5)) * 100
+    
+    // Enhanced weighting system including Wave Trend
+    trend_weight = 0.55     // PSAR base weight
+    cci_weight = 0.10      // CCI weight for momentum
+    vwap_weight = 0.10     // VWAP weight for price position
+    wt_weight = 0.25       // Wave Trend weight
+    
+    // Combine factors with dynamic weighting
+    trend_score = psar_norm * trend_weight
+    momentum_score = cci_factor * 100 * cci_weight
+    price_score = vwap_factor * 100 * vwap_weight
+    wt_score = wt_factor * 100 * wt_weight
+    
+    // Final enhanced PSAR with Wave Trend integration
+    enhanced_psar = trend_score + momentum_score + price_score + wt_score
+    
+    enhanced_psar
+
+// Get enhanced PSAR for each timeframe
+psar1 = getEnhancedPsar(res1)
+psar2 = getEnhancedPsar(res2)
+psar3 = getEnhancedPsar(res3)
+psar4 = getEnhancedPsar(res4)
+psar5 = getEnhancedPsar(res5)
+psar6 = getEnhancedPsar(res6)
+
+// Function to convert resolution to string
+res_to_string(res) =>
+    str = switch res
+        "1" => "1m"
+        "5" => "5m"
+        "3" => "3m"
+        "15" => "15m"
+        "30" => "30m"
+        "45" => "45m"
+        "60" => "1h"
+        "120" => "2h"
+        "180" => "3h"
+        "240" => "4h"
+        "1D" => "1D"
+        "1W" => "1W"
+        "1M" => "1M"
+        => ""
+    str
+
+// Function to get color based on enhanced PSAR
+getPsarColor(psar) =>
+    if psar > 0
+        strength = math.min(math.abs(psar)/100, 1)
+        color.new(bullish, 100 * (1 - strength))
+    else
+        strength = math.min(math.abs(psar)/100, 1)
+        color.new(bearish, 100 * (1 - strength))
+
+// Plot bars for each timeframe
+plot(1, style=plot.style_line, color=getPsarColor(psar1), linewidth=5, title="1st Timeframe")
+plot(2, style=plot.style_line, color=getPsarColor(psar2), linewidth=5, title="2nd Timeframe")
+plot(3, style=plot.style_line, color=getPsarColor(psar3), linewidth=5, title="3rd Timeframe")
+plot(4, style=plot.style_line, color=getPsarColor(psar4), linewidth=5, title="4th Timeframe")
+plot(5, style=plot.style_line, color=getPsarColor(psar5), linewidth=5, title="5th Timeframe")
+plot(6, style=plot.style_line, color=getPsarColor(psar6), linewidth=5, title="6th Timeframe")
+
+// Label handling
+if barstate.islast
+    x_pos = bar_index
+    label.new(x_pos, 1, res_to_string(res1), color=na, textcolor=color.white, style=label.style_label_right, size=size.tiny, xloc=xloc.bar_index)
+    label.new(x_pos, 2, res_to_string(res2), color=na, textcolor=color.white, style=label.style_label_right, size=size.tiny, xloc=xloc.bar_index)
+    label.new(x_pos, 3, res_to_string(res3), color=na, textcolor=color.white, style=label.style_label_right, size=size.tiny, xloc=xloc.bar_index)
+    label.new(x_pos, 4, res_to_string(res4), color=na, textcolor=color.white, style=label.style_label_right, size=size.tiny, xloc=xloc.bar_index)
+    label.new(x_pos, 5, res_to_string(res5), color=na, textcolor=color.white, style=label.style_label_right, size=size.tiny, xloc=xloc.bar_index)
+    label.new(x_pos, 6, res_to_string(res6), color=na, textcolor=color.white, style=label.style_label_right, size=size.tiny, xloc=xloc.bar_index)
