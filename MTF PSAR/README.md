@@ -6,5 +6,5 @@ A Multi-timeframe version of the normalised weighted Parabolic SAR technical ind
 
 | Instrument | Signal Chart  |
 |:----------:|:--------:|
-| ```EURUSD```| ![alt EURUSD](https://github.com/Quadapt-AI/Q-Quant/blob/main/MTF PSAR/Signals/psar.png)|
+| ```EURUSD```| ![alt EURUSD](https://github.com/Quadapt-AI/Q-Quant/blob/main/MTF%20PSAR/Signals/psar.png)|
 
